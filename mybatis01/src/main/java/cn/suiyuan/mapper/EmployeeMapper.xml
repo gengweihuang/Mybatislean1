@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.suiyuan.mapper.EmployeeMapper">
+    <resultMap id="GetEmployee" type="cn.suiyuan.pojo.Employee">
+        <result column="id" property="id"/>
+        <result column="real_name" property="realName"/>
+        <result column="sex" property="sex"/>
+        <result column="mobile" property="mobile"/>
+        <result column="position" property="position"/>
+        <result column="note" property="note"/>
+        <association property="workCard" column="id"
+                     select="cn.suiyuan.mapper.WorkCardMapper.getWorkCard" />
+        <!-- ofType和javaType的区别？？？   -->
+        <collection property="employeeTaskList" column="id" ofType="cn.suiyuan.pojo.EmployeeTask"
+                    select="cn.suiyuan.mapper.EmployeeTaskMapper.getEmployeeTask"/>
+    </resultMap>
+
+    <select id="getEmployee" resultMap="GetEmployee">
+        select * from employee.t_employee where id = #{id}
+    </select>
+
+
+        <!--  这是一个一对多的例子  结合到两张表之间的关联 -->
+
+    <select id="getAllTask" resultMap="GetAllTask">
+        select t1.id,t1.real_name name,t2.task_name from employee.t_employee t1,employee.t_employee_task t2 where t1.id = t2.emp_id and t1.id=#{empId};
+    </select>
+
+    <resultMap id="GetAllTask" type="cn.suiyuan.pojo.Employee">
+        <!-- 问题3：获取的数据字段无法显示
+        原因：上面sql语句已经是对表的字段取别名 所以通过属性对sql字段映射需要映射到别名上面-->
+        <id column="id" property="id"/>
+        <!-- 所以此时这里的column 属性值不能是real_name  应该是别名name property属性值就是类的属性-->
+        <result property="realName" column="name"/>
+        <!--  出现类型无法转换的原因2： 我上面type是cn.suiyuan.pojo.Employee
+        而方法的返回结果泛型是EmployeeTask   所以导致无法将查询到类型为Employee 转换成EmployeeTask
+        -->
+        <collection property="employeeTaskList" ofType="cn.suiyuan.pojo.EmployeeTask">
+            <result property="taskName" column="task_name"/>
+            <!--<result property="empId" column="emp_id" />-->
+        </collection>
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!-- 核心配置文件 -->
+<configuration>
+    <!--<properties resource="jdbc.properties"></properties>-->
+    <settings>
+        <!--还有其他形式的日志工厂  修改value值即可-->
+        <setting name="logImpl" value="LOG4J"/>
+        <!--<setting name="logImpl" value="STDOUT_LOGGING"/>-->
+        <setting name="mapUnderscoreToCamelCase" value="true" />
+    </settings>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/employee?useSSL=true&amp;serverTimezone=UTC&amp;useUnicode=true&amp;characterEncoding=UTF-8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+                <!-- 通过properties文件进行读取数据库配置-->
+                <!--<property name="driver" value="${database.driver}"/>-->
+                <!--<property name="url" value="${database.url}"/>-->
+                <!--<property name="username" value="${database.username}"/>-->
+                <!--<property name="password" value="${database.password}"/>-->
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- 每一个mapper.xml 都需要在Mybatis核心配置文件中进行注册-->
+    <mappers>
+        <mapper resource="cn/suiyuan/mapper/BlogMapper.xml" />
+    </mappers>
+
+</configuration>

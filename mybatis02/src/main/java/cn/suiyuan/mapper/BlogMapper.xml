@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.suiyuan.mapper.BlogMapper">
+    <insert id="insertBlog" parameterType="cn.suiyuan.pojo.Blog">
+        insert into employee.blog values (#{id},#{title},#{author},#{createTime},#{views})
+    </insert>
+
+    <!--  测试动态sql -->
+    <!--
+    错误1.查询要有返回结果类型
+    A query was run and no Result Maps were found for the Mapped Statement 'cn.suiyuan.mapper.BlogMapper.queryBlogIf'.
+      It's likely that neither a Result Type nor a Result Map was specified.
+    错误2. Xml中的大于应该是&gt;   小于是&lt;
+
+
+      -->
+    <select id="queryBlogIf" parameterType="map" resultType="cn.suiyuan.pojo.Blog">
+        select * from employee.blog
+
+        <if test="title != null">
+            where title = #{title}
+        </if>
+        <if test="title == null">  <!-- 解决了下面的冲突 但是方法笨拙 不推荐-->
+            where
+        </if>
+--      第二种解决办法 ： 首句添加where 1=1 然后 所有if 的语句都加 and
+--      第三种最推荐的办法 ： where标签内嵌套if标签即可
+--      详细看文档https://mybatis.org/mybatis-3/zh/dynamic-sql.html
+        <!-- 这里有BUG 如果没有加where title不存在 views存在sql语法报错;有where title 和views 不能同时使用 -->
+        <if test="views != null">
+            views &gt;= #{views}
+        </if>
+    </select>
+
+    <!-- choose和when  otherwise搭配使用-->
+    <select id="queryBlogChoose" parameterType="map" resultType="cn.suiyuan.pojo.Blog">
+        select * from employee.blog where 1=1
+--        相当于  java 中的switch
+        <choose>
+          <when test="title !=null and author ==null">
+            and title = #{title}
+          </when>
+          <otherwise>
+            and author="随缘"
+          </otherwise>
+        </choose>
+    </select>
+
+    <!--
+    使用where
+    where 元素只会在至少有一个子元素的条件返回 SQL 子句的情况下才去插入“WHERE”子句。
+    而且，若语句的开头为“AND”或“OR”，where 元素也会将它们去除。
+    -->
+    <select id="queryBlogWhere" parameterType="map" resultType="cn.suiyuan.pojo.Blog">
+        select * from employee.blog
+        <where>
+          <if test="title != null">
+              and title = #{title}
+          </if>
+        </where>
+    </select>
+
+    <!--foreach
+    foreach 元素的功能非常强大，它允许你指定一个集合，声明可以在元素体内使用的集合项（item）和索引（index）变量。
+    它也允许你指定开头与结尾的字符串以及在迭代结果之间放置分隔符。这个元素是很智能的，因此它不会偶然地附加多余的分隔符。
+    注意 你可以将任何可迭代对象（如 List、Set 等）、Map 对象或者数组对象传递给 foreach 作为集合参数。当使用可迭代对象或者数组时，index 是当前迭代的次数，item 的值是本次迭代获取的元素。
+    当使用 Map 对象（或者 Map.Entry 对象的集合）时，index 是键，item 是值。
+    -->
+    <select id="queryBlogForeach" parameterType="map" resultType="cn.suiyuan.pojo.Blog">
+--   select * from employee.blog where  title in ("title","title"....);
+        select * from employee.blog
+        <where>
+--         因为传入的map键是titleL   所以这边如果还是使用title 会导致无法判断字段 Operand should contain 1 column(s)
+            <if test="titleL != null">
+                title in
+            </if>
+--          其中collection参数是传递进来的集合参数名称   item表示当前循环的元素变量 index表示下标
+--          open separator close  相当于("title","title"....)
+            <foreach item="title" index="index" collection="titleL"
+            open="(" separator="," close=")">
+              #{title}
+            </foreach>
+        </where>
+    </select>
+
+
+</mapper>
